@@ -104,8 +104,6 @@ def balance(financials):
     return balance
 
 
-
-
 def price(tic,financial):
 
     first = financial.columns[0].astype(int)
