@@ -1,19 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Financial Data Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
 </head>
 <body>
-    <h1>Enter Your Details</h1>
-    <form method="post">
-        <label for="name">First Name:</label><br>
-        <input type="text" id="name" name="name" required><br>
-        <label for="surname">Last Name:</label><br>
-        <input type="text" id="surname" name="surname" required><br>
+    <h1>Welcome to the Home Page</h1>
+    <p>Please fill out the form below:</p>
+
+    <form action="/" method="post">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="surname">Surname:</label><br>
+        <input type="text" id="surname" name="surname" required><br><br>
+
         <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br>
-        <label for="ticker">Ticker Symbol:</label><br>
-        <input type="text" id="ticker" name="ticker" required><br><br>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="company">Company Name:</label><br>
+        <input type="text" id="company" name="company" required><br><br>
+
         <input type="submit" value="Submit">
     </form>
 </body>

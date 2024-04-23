@@ -16,7 +16,7 @@ def identity(name,surname,email):
     return headers
 
 def company_ticker(head):
-    ticker = requests.get('https://www.sec.gov/files/company_tickers.json',headers=head.json())
+    ticker = requests.get('https://www.sec.gov/files/company_tickers.json',headers=head).json()
     ticker_df = pd.DataFrame.from_dict(ticker,orient='index')
     ticker_df.rename(columns={'cik_str':'cik','title':'name'},inplace=True)
     #Filing in the cik code and adding the leading zeros
@@ -28,8 +28,8 @@ def company_facts(head,cik):
     return facts
 
 
-def cik_finder(ticker):
-    cik = ticker.loc[ticker['ticker'] == ticker.upper(), 'cik'].iloc[0]
+def cik_finder(ticker_df,tic):
+    cik = ticker_df.loc[ticker_df['ticker'] == tic.upper(), 'cik'].iloc[0]
     return cik
 
 def find_best_match(items, search):
