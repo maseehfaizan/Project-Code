@@ -34,12 +34,31 @@ def home():
         email = request.form['email']
         company = request.form['company']
 
-        # Process the data using the Python algorithm
-        price = process_financial_data(name, surname, email, company)
 
         # Display or use the processed data
-        return price
+        thread = threading.Thread(target=process_financial_data, args=(name, surname, email, company))
+        thread.start()
+
+        # Redirect to another page after form submission
+        return redirect(url_for('options'))
     return render_template('home.html')
+
+
+@app.route('/options')
+def options():
+    return render_template('options.html')
+
+@app.route('/action1')
+def action1():
+    # Perform some action here
+    return "Action 1 executed!"
+
+@app.route('/action2')
+def action2():
+    # Perform another action here
+    return "Action 2 executed!"
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
