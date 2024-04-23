@@ -23,7 +23,7 @@ def company_ticker(head):
     ticker_df['cik'] = ticker_df['cik'].astype(str).str.zfill(10)
     return ticker_df
 
-def company_facts(head):
+def company_facts(head,cik):
     facts = requests.get(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json',headers = head).json()
     return facts
 
