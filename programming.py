@@ -164,6 +164,7 @@ def cum_returns(dataframe, ticker):
     dataframe[f'{ticker}_cum_return'] = dataframe[f'{ticker}_return'].cumsum()
     dataframe['S&P500_cum_return'] = dataframe['S&P500_return'].cumsum()
     dataframe['CAPM_cum'] = dataframe['CAPM'].cumsum()
+    dataframe['cum_rf_rate'] = dataframe['Risk Free Rate'].cumsum()
 
     dataframe = dataframe.dropna()
     return dataframe
