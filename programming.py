@@ -131,11 +131,19 @@ def price(tic,financial):
     price['Date'] = pd.to_datetime(price['Date'])
     price = price.rename(columns={'Average':f'{tic} Price','Volume':f'{tic} Volume'})
     market = market.rename(columns={'Average':'S&P500','Volume':'S&P500 Volume'})
+    rate = riskfree()
     main = pd.merge(price,market,right_on='Date',left_on='Date',how='inner')
+    main = pd.merge(rate,market,right_on='Date',left_on='Date',how='inner')
     main = main.drop_duplicates(subset='Date')
     return main
 
 def cum_returns(dataframe, ticker):
+    """
+    dataframe: In our case this is the main data frame which is merged so we can compute 
+    the returns and the cumulative returns starting from 2014 (10years)
+
+    ticker: Which is the ticker of the company we are trying to comput the data for
+    """
     dataframe[f'{ticker}_return'] = dataframe[f'{ticker} Price'].pct_change()*100
     dataframe['S&P500_return'] = dataframe['S&P500'].pct_change()*100
 
