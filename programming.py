@@ -134,8 +134,22 @@ def price(tic,financial):
     rate = riskfree()
     main = pd.merge(price,market,right_on='Date',left_on='Date',how='inner')
     main = pd.merge(rate,market,right_on='Date',left_on='Date',how='inner')
+
     main = main.drop_duplicates(subset='Date')
     return main
+
+
+def get_company_beta(ticker):
+    # Get the company data
+    company = yf.Ticker(ticker)
+    
+    # Fetch the beta value
+    beta = company.info['beta']
+    return beta
+
+def capm(dataframe,beta):
+    dataframe['CAPM'] = (dataframe['Risk Free Rate']) + beta * (dataframe['S&P500_return'] - dataframe['Risk Free Rate'])
+    
 
 def cum_returns(dataframe, ticker):
     """
@@ -149,6 +163,8 @@ def cum_returns(dataframe, ticker):
 
     dataframe[f'{ticker}_cum_return'] = dataframe[f'{ticker}_return'].cumsum()
     dataframe['S&P500_cum_return'] = dataframe['S&P500_return'].cumsum()
+    dataframe['CAPM_cum'] = dataframe['CAPM'].cumsum()
+
     dataframe = dataframe.dropna()
     return dataframe
 
