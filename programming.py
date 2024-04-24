@@ -2,12 +2,15 @@
 import pandas as pd
 import yfinance as yf
 import numpy as np
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 import re
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import seaborn as sns
 import time
-import difflib
 import datetime
+import difflib
 
 
 
@@ -129,6 +132,67 @@ def price(tic,financial):
     price = price.rename(columns={'Average':f'{tic} Price','Volume':f'{tic} Volume'})
     market = market.rename(columns={'Average':'S&P500','Volume':'S&P500 Volume'})
     main = pd.merge(price,market,right_on='Date',left_on='Date',how='inner')
+    main = main.drop_duplicates(subset='Date')
     return main
 
+def cum_returns(dataframe, ticker):
+    dataframe[f'{ticker}_return'] = dataframe[f'{ticker} Price'].pct_change()*100
+    dataframe['S&P500_return'] = dataframe['S&P500'].pct_change()*100
 
+    dataframe[f'{ticker}_cum_return'] = dataframe[f'{ticker}_return'].cumsum()
+    dataframe['S&P500_cum_return'] = dataframe['S&P500_return'].cumsum()
+    dataframe = dataframe.dropna()
+    return dataframe
+
+def return_plot(dataframe, ticker):
+    fig, axs = plt.subplots(figsize=(12, 6))
+
+    sns.lineplot(data=dataframe, x='Date', y=f'{ticker}_cum_return',label=f'{ticker} Cumulative returns', ax=axs,color='red')
+
+    sns.lineplot(data=dataframe, x='Date', y='S&P500_cum_return',label='S&P500 Cumulative returns', ax=axs, color='blue')
+    axs.spines['top'].set_visible(False)
+    axs.spines['right'].set_visible(False)
+
+    # Adjust layout
+    plt.title('Cumulative returns')
+    plt.tight_layout()
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.fill_between(dataframe['Date'], dataframe[f'{ticker}_cum_return'].values, dataframe['S&P500_cum_return'].values, color='green', alpha=0.2)
+
+
+def riskfree():
+    # Emptry dataframe
+    rate = pd.DataFrame()
+    #empty rates
+    rates = []
+    # loop through all the csv files
+    for i in range(11):
+        #names are from 1 to 7
+        i +=1
+
+        name = str(i)
+        name = pd.read_csv(f'./daily-treasury-rates-{i}.csv')
+        # fill the list with dataframes
+        rates.append(name)
+    #concate everything row wise
+    rate = pd.concat(rates,ignore_index=True)
+    rate['Date'] = pd.to_datetime(rate['Date'])
+    rate = rate.sort_values(by='Date')
+    # I only want to consider the 13 weeks discount rate as the true riskfree rate
+    rate = rate[['Date','13 WEEKS BANK DISCOUNT']]
+    rate = rate.drop_duplicates(subset='Date')
+    return rate
+
+def rf_plot(dataframe):
+    fig, axs = plt.subplots(figsize=(12, 6))
+
+    sns.lineplot(data=dataframe, x='Date', y='13 WEEKS BANK DISCOUNT',label='13 WEEKS BANK DISCOUNT %', ax=axs,color='red')
+
+
+    axs.spines['top'].set_visible(False)
+    axs.spines['right'].set_visible(False)
+
+    # Adjust layout
+    plt.title('13 Weeks Treasury bills (Risk Free Rates)')
+    plt.tight_layout()
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
