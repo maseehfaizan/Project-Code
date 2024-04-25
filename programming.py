@@ -7,10 +7,13 @@ from bs4 import BeautifulSoup
 import re
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import seaborn as sns
 import time
 import datetime
 import difflib
+from difflib import get_close_matches
 
 
 
@@ -31,7 +34,12 @@ def company_facts(head,cik):
     return facts
 
 
+
 def cik_finder(ticker_df,tic):
+    # Upper things up so even if user submits something wrong the code will make the ticker uppercase
+    tic = tic.upper()
+    #Now I will find the closest match so if the user put in something that is slightly wrong it won't crash the whole system up and still run the code fine.
+    tic = get_close_matches(tic, ticker_df['ticker'], n=1, cutoff=0.65)[0]
     cik = ticker_df.loc[ticker_df['ticker'] == tic.upper(), 'cik'].iloc[0]
     return cik
 
@@ -91,7 +99,7 @@ def finance(head,cik,names):
             financials = financials.merge(name,left_on='Year',right_on='Year',how='left')
 
     financials = financials.drop('val',axis = 1)
-    financials = financials.sort_values(by='Year',ascending=False)
+    financials = financials.sort_values(by='Year',ascending=True)
     financials = financials.set_index('Year')
     financials = financials.T
     return financials
@@ -112,8 +120,8 @@ def price(tic,financial):
     first = financial.columns[0].astype(int)
     last = financial.columns[-1].astype(int)
 
-    start=datetime.datetime(last,1,1)
-    end=datetime.datetime(first,12,31)
+    start=datetime.datetime(first,1,1)
+    end=datetime.datetime(last,12,31)
 
     price = yf.download(tic,start,end)
     market = yf.download('^GSPC',start,end)
@@ -140,12 +148,15 @@ def price(tic,financial):
 
 
 def get_company_beta(ticker):
-    # Get the company data
+    # Get the company data there are times where yahoo doesn't have the beta data for newly listed companies including TSLA.
+    #For those company I will give beta balue of 1 so it doesn't change anything in further analysis
     company = yf.Ticker(ticker)
-    
-    # Fetch the beta value
-    beta = company.info['beta']
-    return beta
+    try:
+        # Fetch the beta value
+        beta_val = company.info['beta']
+    except KeyError:
+        beta_val = 1
+    return beta_val
 
 def capm(dataframe,beta):
     dataframe['CAPM'] = (dataframe['Risk Free Rate']) + beta * (dataframe['S&P500_return'] - dataframe['Risk Free Rate'])
@@ -173,8 +184,10 @@ def return_plot(dataframe, ticker):
     fig, axs = plt.subplots(figsize=(12, 6))
 
     sns.lineplot(data=dataframe, x='Date', y=f'{ticker}_cum_return',label=f'{ticker} Cumulative returns', ax=axs,color='red')
-
     sns.lineplot(data=dataframe, x='Date', y='S&P500_cum_return',label='S&P500 Cumulative returns', ax=axs, color='blue')
+    sns.lineplot(data=dataframe, x='Date', y='CAPM_cum',label='CAPM', ax=axs, color='blue')
+    sns.lineplot(data=dataframe, x='Date', y='cum_rf_rate',label='Risk Free Returns', ax=axs, color='black')
+
     axs.spines['top'].set_visible(False)
     axs.spines['right'].set_visible(False)
 
@@ -183,6 +196,7 @@ def return_plot(dataframe, ticker):
     plt.tight_layout()
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     plt.fill_between(dataframe['Date'], dataframe[f'{ticker}_cum_return'].values, dataframe['S&P500_cum_return'].values, color='green', alpha=0.2)
+    return plt
 
 
 def riskfree():
@@ -209,6 +223,7 @@ def riskfree():
     return rate
 
 def rf_plot(dataframe):
+
     fig, axs = plt.subplots(figsize=(12, 6))
 
     sns.lineplot(data=dataframe, x='Date', y='13 WEEKS BANK DISCOUNT',label='13 WEEKS BANK DISCOUNT %', ax=axs,color='red')
@@ -221,3 +236,96 @@ def rf_plot(dataframe):
     plt.title('13 Weeks Treasury bills (Risk Free Rates)')
     plt.tight_layout()
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    return plt
+
+def return_interactive(dataframe,ticker):
+        # Sample DataFrame - replace this with your actual DataFrame
+    # main = pd.read_csv('your_data.csv')
+    # tic = 'your_ticker'
+
+    # Assuming 'Date' is already a datetime type; if not, convert it:
+    # main['Date'] = pd.to_datetime(main['Date'])
+
+    # Create traces
+    trace1 = go.Scatter(x=dataframe['Date'], y=dataframe[f'{ticker}_cum_return'], mode='lines', name=f'{ticker} Cumulative returns', line=dict(color='red'))
+
+    trace2 = go.Scatter(x=dataframe['Date'], y=dataframe['CAPM_cum'], mode='lines', name='CAPM', line=dict(color='blue'))
+    trace3 = go.Scatter(x=dataframe['Date'], y=dataframe['S&P500_cum_return'], mode='lines', name='S&P500 Cumulative returns', line=dict(color='green'))
+    trace4 = go.Scatter(x=dataframe['Date'], y=dataframe['cum_rf_rate'], mode='lines', name='Risk Free Returns', line=dict(color='black'))
+
+    # Create the figure
+    fig = go.Figure(data=[trace1, trace2, trace3, trace4])
+
+    # Fill between trace1 and trace3
+    fig.add_trace(go.Scatter(x=dataframe['Date'], y=dataframe[f'{ticker}_cum_return'],
+                            mode='lines', fill=None, showlegend=False,
+                            line=dict(color='rgba(255,255,255,0)')))
+
+    fig.add_trace(go.Scatter(x=dataframe['Date'], y=dataframe['S&P500_cum_return'],
+                            mode='lines', fill='tonexty', showlegend=False,
+                            line=dict(color='green', width=0), fillcolor='rgba(0,255,0,0.2)'))
+
+
+
+    # Update layout
+    fig.update_layout(title='Cumulative Returns Comparison',
+                    xaxis_title='Date',
+                    yaxis_title='Cumulative Return',
+                    hovermode='x unified')
+
+    return fig
+
+def rf_interactive(dataframe):
+    # Sample DataFrame - replace 'rate' with your actual DataFrame variable name
+    # rate = pd.read_csv('your_data.csv')
+
+    # Assuming 'Date' is already in datetime format; if not, convert it:
+    # rate['Date'] = pd.to_datetime(rate['Date'])
+
+    # Create trace
+    trace = go.Scatter(x=dataframe['Date'], y=dataframe['Risk Free Rate'], mode='lines', name='13 WEEKS BANK DISCOUNT %', line=dict(color='red'))
+
+    # Create the figure
+    fig = go.Figure(data=[trace])
+
+    # Update layout
+    fig.update_layout(
+        title='13 Weeks Treasury Bills (Risk Free Rates)',
+        xaxis_title='Date',
+        yaxis_title='Risk Free Rate',
+        hovermode='x unified',
+        template='plotly_white'  # This adds a clean white background similar to your Matplotlib style
+    )
+
+    # Add grid lines
+    fig.update_xaxes(showgrid=True, gridwidth=0.5, gridcolor='lightgrey')
+    fig.update_yaxes(showgrid=True, gridwidth=0.5, gridcolor='lightgrey')
+
+    # Remove right and top lines
+    fig.update_layout(showlegend=True, plot_bgcolor='white', xaxis_showspikes=True, yaxis_showspikes=True)
+    return fig
+
+
+def price_interactive(dataframe,ticker):
+    trace = go.Scatter(x=dataframe['Date'], y=dataframe[f'{ticker} Price'], mode='lines', name=f'{ticker} Price', line=dict(color='green'))
+
+    # Create the figure
+    fig = go.Figure(data=[trace])
+
+    # Update layout
+    fig.update_layout(
+        title=(f'{ticker} Price '),
+        xaxis_title='Date',
+        yaxis_title='Price $',
+        hovermode='x unified',
+        template='plotly_white'  # This adds a clean white background similar to your Matplotlib style
+    )
+
+    # Add grid lines
+    fig.update_xaxes(showgrid=True, gridwidth=0.5, gridcolor='lightgrey')
+    fig.update_yaxes(showgrid=True, gridwidth=0.5, gridcolor='lightgrey')
+
+    # Remove right and top lines
+    fig.update_layout(showlegend=True, plot_bgcolor='white', xaxis_showspikes=True, yaxis_showspikes=True)
+
+    return fig
