@@ -8,6 +8,7 @@ import re
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import plotly.graph_objects as go
+import plotly.express as px
 from plotly.subplots import make_subplots
 import seaborn as sns
 import time
@@ -44,7 +45,7 @@ def cik_finder(ticker_df,tic):
     return cik
 
 def find_best_match(items, search):
-    matches = difflib.get_close_matches(search, items, n=1, cutoff=0.0)
+    matches = difflib.get_close_matches(search, items, n=1, cutoff=0.4)
     return matches[0] if matches else None
 
 def matchmaker(facts):
@@ -141,9 +142,22 @@ def price(tic,financial):
     market = market.rename(columns={'Average':'S&P500','Volume':'S&P500 Volume'})
     rate = riskfree()
     main = pd.merge(price,market,right_on='Date',left_on='Date',how='inner')
-    main = pd.merge(rate,market,right_on='Date',left_on='Date',how='inner')
+    main = main.merge(rate,right_on='Date',left_on='Date',how='inner')
 
+
+
+    main[f'{tic}_return'] = main[f'{tic} Price'].pct_change()*100
+    main['S&P500_return'] = main['S&P500'].pct_change()*100
+    beta = get_company_beta(tic)
+    main['CAPM'] = (main['Risk Free Rate']) + beta * (main['S&P500_return'] - main['Risk Free Rate'])
+    main[f'{tic}_cum_return'] = main[f'{tic}_return'].cumsum()
+    main['S&P500_cum_return'] = main['S&P500_return'].cumsum()
+    main['CAPM_cum'] = main['CAPM'].cumsum()
+    main['cum_rf_rate'] = main['Risk Free Rate'].cumsum()
+    
+    
     main = main.drop_duplicates(subset='Date')
+    main = main.dropna()
     return main
 
 
@@ -158,27 +172,7 @@ def get_company_beta(ticker):
         beta_val = 1
     return beta_val
 
-def capm(dataframe,beta):
-    dataframe['CAPM'] = (dataframe['Risk Free Rate']) + beta * (dataframe['S&P500_return'] - dataframe['Risk Free Rate'])
-    
 
-def cum_returns(dataframe, ticker):
-    """
-    dataframe: In our case this is the main data frame which is merged so we can compute 
-    the returns and the cumulative returns starting from 2014 (10years)
-
-    ticker: Which is the ticker of the company we are trying to comput the data for
-    """
-    dataframe[f'{ticker}_return'] = dataframe[f'{ticker} Price'].pct_change()*100
-    dataframe['S&P500_return'] = dataframe['S&P500'].pct_change()*100
-
-    dataframe[f'{ticker}_cum_return'] = dataframe[f'{ticker}_return'].cumsum()
-    dataframe['S&P500_cum_return'] = dataframe['S&P500_return'].cumsum()
-    dataframe['CAPM_cum'] = dataframe['CAPM'].cumsum()
-    dataframe['cum_rf_rate'] = dataframe['Risk Free Rate'].cumsum()
-
-    dataframe = dataframe.dropna()
-    return dataframe
 
 def return_plot(dataframe, ticker):
     fig, axs = plt.subplots(figsize=(12, 6))
@@ -219,6 +213,7 @@ def riskfree():
     rate = rate.sort_values(by='Date')
     # I only want to consider the 13 weeks discount rate as the true riskfree rate
     rate = rate[['Date','13 WEEKS BANK DISCOUNT']]
+    rate = rate.rename(columns={'13 WEEKS BANK DISCOUNT':'Risk Free Rate'})
     rate = rate.drop_duplicates(subset='Date')
     return rate
 
@@ -272,8 +267,9 @@ def return_interactive(dataframe,ticker):
                     xaxis_title='Date',
                     yaxis_title='Cumulative Return',
                     hovermode='x unified')
+    div = fig.to_html(full_html=False)
 
-    return fig
+    return div
 
 def rf_interactive(dataframe):
     # Sample DataFrame - replace 'rate' with your actual DataFrame variable name
@@ -283,6 +279,7 @@ def rf_interactive(dataframe):
     # rate['Date'] = pd.to_datetime(rate['Date'])
 
     # Create trace
+    dataframe = dataframe.reset_index()
     trace = go.Scatter(x=dataframe['Date'], y=dataframe['Risk Free Rate'], mode='lines', name='13 WEEKS BANK DISCOUNT %', line=dict(color='red'))
 
     # Create the figure
@@ -303,7 +300,8 @@ def rf_interactive(dataframe):
 
     # Remove right and top lines
     fig.update_layout(showlegend=True, plot_bgcolor='white', xaxis_showspikes=True, yaxis_showspikes=True)
-    return fig
+    div = fig.write_html("./static/plot_rf.html")
+    return div
 
 
 def price_interactive(dataframe,ticker):
@@ -327,8 +325,9 @@ def price_interactive(dataframe,ticker):
 
     # Remove right and top lines
     fig.update_layout(showlegend=True, plot_bgcolor='white', xaxis_showspikes=True, yaxis_showspikes=True)
-
-    return fig
+    
+    div = fig.write_html("./static/plot_price.html")
+    return div
 
 
 
@@ -377,9 +376,10 @@ def eps_plot_interactive(dataframe,ticker):
     # Remove the 'spines' (In plotly, they are called 'lines')
     fig.update_xaxes(showspikes=False)
     fig.update_yaxes(showspikes=False)
-
+    div = fig.to_html(full_html=False)
     # Show the plot
-    return fig
+    return div
+
 
 
 
@@ -433,7 +433,7 @@ def ratio_plot_interactive(dataframe,ticker):
     # Remove the 'spines' (In plotly, they are called 'lines')
     fig.update_xaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
     fig.update_yaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
-
+    div = fig.to_html(full_html=False)
 # Show the plot
-    return fig
+    return div
 
