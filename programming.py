@@ -267,7 +267,7 @@ def return_interactive(dataframe,ticker):
                     xaxis_title='Date',
                     yaxis_title='Cumulative Return',
                     hovermode='x unified')
-    div = fig.to_html(full_html=False)
+    div = fig.write_html("./static/plot_returns.html")
 
     return div
 
@@ -376,7 +376,7 @@ def eps_plot_interactive(dataframe,ticker):
     # Remove the 'spines' (In plotly, they are called 'lines')
     fig.update_xaxes(showspikes=False)
     fig.update_yaxes(showspikes=False)
-    div = fig.to_html(full_html=False)
+    div = fig.write_html("./static/plot_eps.html")
     # Show the plot
     return div
 
@@ -433,7 +433,7 @@ def ratio_plot_interactive(dataframe,ticker):
     # Remove the 'spines' (In plotly, they are called 'lines')
     fig.update_xaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
     fig.update_yaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
-    div = fig.to_html(full_html=False)
+    div = fig.write_html("./static/plot_eps.html")
 # Show the plot
     return div
 

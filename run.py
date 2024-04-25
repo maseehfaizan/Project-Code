@@ -1,9 +1,10 @@
 import programming
-from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from flask import Markup
 from flask_session import Session  # Session management
 from difflib import get_close_matches
 import pandas as pd
+import threading
 
 import plotly.graph_objects as go
 import plotly.io as pio
@@ -37,10 +38,13 @@ def home():
         name = request.form['name']
         surname = request.form['surname']
         email = request.form['email']
-        company = request.form['company']
+        ticker = request.form['company']
 
         # Save user input to session to use across requests
-        session['user_data'] = (name, surname, email, company)
+        thread = threading.Thread(target=process_financial_data, args=(name, surname, email, ticker))
+        thread.start()
+        thread.join()  # Ensure the thread has completed before redirecting
+
         return redirect(url_for('options'))
     return render_template('home.html')
 
@@ -50,8 +54,8 @@ def options():
 
 @app.route('/action1')
 def action1():
-    name, surname, email, ticker = session.get('user_data', (None, None, None, None))
-    ticker, rf_plot,price_plot,return_plot,df_html,financial_df,df_html = process_financial_data(name, surname, email, ticker)
+    #name, surname, email, ticker = session.get('user_data', (None, None, None, None))
+    #ticker, rf_plot,price_plot,return_plot,df_html,financial_df,df_html = process_financial_data(name, surname, email, ticker)
     return send_from_directory('static', 'plot_rf.html')
 
 
