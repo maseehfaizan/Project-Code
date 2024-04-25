@@ -329,3 +329,111 @@ def price_interactive(dataframe,ticker):
     fig.update_layout(showlegend=True, plot_bgcolor='white', xaxis_showspikes=True, yaxis_showspikes=True)
 
     return fig
+
+
+
+def eps_plot_interactive(dataframe,ticker):
+    """
+    - Dataframe is the income statement so it can look up for the EPS and NetIncome in there
+    - The Ticker is used to change the title of the company.
+    """
+    fig = make_subplots(rows=1, cols=2, subplot_titles=('Earnings per Share', 'Net Income'))
+
+    # Generate the colors based on the sign of the 'EPS' and 'Net Income' values
+    colors_eps = ['red' if x < 0 else 'green' for x in income['EPS']]
+    colors_net_income = ['red' if x < 0 else 'green' for x in income['Net Income']]
+
+    # Add bar plots for 'EPS'
+    fig.add_trace(
+        go.Bar(x=dataframe['Year'], y=dataframe['EPS'], marker_color=colors_eps, name='EPS'),
+        row=1, col=1
+    )
+
+    # Add bar plots for 'Net Income'
+    fig.add_trace(
+        go.Bar(x=dataframe['Year'], y=dataframe['Net Income'], marker_color=colors_net_income, name='Net Income'),
+        row=1, col=2
+    )
+
+    # Update the layout for a cleaner look
+    fig.update_layout(
+        title_text=f'Earning Per Share and Net Income for {ticker}',
+        showlegend=False,
+        plot_bgcolor='white',
+        height=600, width=1200
+        
+    )
+
+    # Update yaxis properties
+    fig.update_yaxes(title_text='Dollars', showline=True, linewidth=2, linecolor='black', mirror=True)
+
+    # Update xaxis properties
+    fig.update_xaxes(title_text='Years', showline=True, linewidth=2, linecolor='black', mirror=True)
+
+    # Add a horizontal line at y=0 for both subplots
+    fig.add_hline(y=0, line_color='black', line_width=2, row=1, col=1)
+    fig.add_hline(y=0, line_color='black', line_width=2, row=1, col=2)
+
+    # Remove the 'spines' (In plotly, they are called 'lines')
+    fig.update_xaxes(showspikes=False)
+    fig.update_yaxes(showspikes=False)
+
+    # Show the plot
+    return fig
+
+
+
+def ratio_plot_interactive(dataframe,ticker):
+    """
+    The dataframe here is the Balancesheet dataframe
+    The Ticker is about the name of the company.
+    """
+
+    dataframe = dataframe.reset_index()
+    # Create subplots
+    fig = make_subplots(rows=1, cols=2, subplot_titles=('Liability to Equity Ratio', 'Liability to Current Asset Ratio'))
+
+    # First subplot for 'Liability to Equity ratio'
+    fig.add_trace(
+        go.Bar(name='Liability', x=dataframe['Year'], y=dataframe['Liability'], marker_color='blue'),
+        row=1, col=1
+    )
+    fig.add_trace(
+        go.Bar(name='Total Stockholders Equity', x=dataframe['Year'], y=dataframe['Total Stockholders equity'], marker_color='green'),
+        row=1, col=1
+    )
+
+    # Second subplot for 'Liability to Current Asset Ratio'
+    fig.add_trace(
+        go.Bar(name='Liability', x=dataframe['Year'], y=dataframe['Liability'], marker_color='blue'),
+        row=1, col=2
+    )
+    fig.add_trace(
+        go.Bar(name='Current Assets', x=dataframe['Year'], y=dataframe['Current Assets'], marker_color='green'),
+        row=1, col=2
+    )
+
+    # Update the layout for a cleaner look
+    fig.update_layout(
+        title_text=f'Balance Sheet Ratios for {ticker}',
+        showlegend=False,
+        plot_bgcolor='white',
+        height=600, width=1200
+    )
+
+    # Update xaxes and yaxes titles
+    fig.update_xaxes(title_text='Years', row=1, col=1)
+    fig.update_xaxes(title_text='Years', row=1, col=2)
+    fig.update_yaxes(title_text='Dollars', row=1, col=1)
+    fig.update_yaxes(title_text='Dollars', row=1, col=2)
+
+    # Make the bar charts stacked
+    fig.update_layout(barmode='stack')
+
+    # Remove the 'spines' (In plotly, they are called 'lines')
+    fig.update_xaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
+    fig.update_yaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
+
+# Show the plot
+    return fig
+
