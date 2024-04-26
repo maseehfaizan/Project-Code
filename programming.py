@@ -143,9 +143,8 @@ def price(tic,financial):
     rate = riskfree()
     main = pd.merge(price,market,right_on='Date',left_on='Date',how='inner')
     main = main.merge(rate,right_on='Date',left_on='Date',how='inner')
-
-
-
+    main = main.drop_duplicates(subset='Date')
+    main = main.dropna()
     main[f'{tic}_return'] = main[f'{tic} Price'].pct_change()*100
     main['S&P500_return'] = main['S&P500'].pct_change()*100
     beta = get_company_beta(tic)
@@ -154,6 +153,7 @@ def price(tic,financial):
     main['S&P500_cum_return'] = main['S&P500_return'].cumsum()
     main['CAPM_cum'] = main['CAPM'].cumsum()
     main['cum_rf_rate'] = main['Risk Free Rate'].cumsum()
+
     
     
     main = main.drop_duplicates(subset='Date')
@@ -214,6 +214,7 @@ def riskfree():
     # I only want to consider the 13 weeks discount rate as the true riskfree rate
     rate = rate[['Date','13 WEEKS BANK DISCOUNT']]
     rate = rate.rename(columns={'13 WEEKS BANK DISCOUNT':'Risk Free Rate'})
+    rate['Risk Free Rate'] = rate['Risk Free Rate']/100
     rate = rate.drop_duplicates(subset='Date')
     return rate
 
