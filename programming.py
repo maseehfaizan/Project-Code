@@ -204,7 +204,7 @@ def riskfree():
         i +=1
 
         name = str(i)
-        name = pd.read_csv(f'./daily-treasury-rates-{i}.csv')
+        name = pd.read_csv(f'./data/daily-treasury-rates-{i}.csv')
         # fill the list with dataframes
         rates.append(name)
     #concate everything row wise
@@ -433,7 +433,7 @@ def ratio_plot_interactive(dataframe,ticker):
     # Remove the 'spines' (In plotly, they are called 'lines')
     fig.update_xaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
     fig.update_yaxes(showline=True, linewidth=2, linecolor='black', mirror=True)
-    div = fig.write_html("./static/plot_eps.html")
+    div = fig.write_html("./static/plot_ratio.html")
 # Show the plot
     return div
 

@@ -1,11 +1,11 @@
 import programming
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session,jsonify
 from flask import Markup
 from flask_session import Session  # Session management
 from difflib import get_close_matches
 import pandas as pd
 import threading
-
+import time
 import plotly.graph_objects as go
 import plotly.io as pio
 
@@ -24,12 +24,16 @@ def process_financial_data(name, surname, email, ticker):
     names = programming.matchmaker(facts)
     financial = programming.finance(header, cik, names)
     price = programming.price(ticker, financial)
+    # All the returns plots
     rf_plot = programming.rf_interactive(price)
     price_plot = programming.price_interactive(price,ticker)
     return_plot = programming.return_interactive(price,ticker)
+    #All the BalanceSheet and income statement plots
+    eps_plot = programming.eps_plot_interactive(financial,ticker)
+    ratio_plot = programming.ratio_plot_interactive(financial,ticker)
     df_html = price.to_html(index=False, classes='dataframe')
     financial_df = financial.to_html(index=False, classes='dataframe')
-    return ticker, rf_plot,price_plot,return_plot,df_html,financial_df,df_html
+    return ticker, rf_plot,price_plot,return_plot,eps_plot,ratio_plot,df_html,financial_df,df_html
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/home', methods=['GET', 'POST'])
@@ -43,10 +47,13 @@ def home():
         # Save user input to session to use across requests
         thread = threading.Thread(target=process_financial_data, args=(name, surname, email, ticker))
         thread.start()
-        thread.join()  # Ensure the thread has completed before redirecting
-
-        return redirect(url_for('options'))
+        return redirect(url_for('waiting'))
     return render_template('home.html')
+
+
+@app.route('/waiting')
+def waiting():
+    return render_template('waiting.html')
 
 @app.route('/options')
 def options():
@@ -61,7 +68,19 @@ def action1():
 
 @app.route('/action2')
 def action2():
-    return "Action 2 executed!"
+    return send_from_directory('static', 'plot_price.html')
+
+@app.route('/action3')
+def action3():
+    return send_from_directory('static', 'plot_returns.html')
+
+@app.route('/action4')
+def action4():
+    return send_from_directory('static', 'plot_eps.html')
+
+@app.route('/action5')
+def action5():
+    return send_from_directory('static', 'plot_ratio.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
