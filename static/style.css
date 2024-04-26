@@ -1,0 +1,111 @@
+body {
+    background-color: #e0f7fa; /* Light blue background */
+    font-family: 'Arial', sans-serif; /* Standard font for better readability */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full height of the viewport */
+}
+
+.container {
+    background-color: #ffffff; /* White background for the form */
+    padding: 20px;
+    margin:3%;
+    
+    border-radius: 10px; /* Rounded corners for the form */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    width: 500px; /* Fixed width for the form container */
+}
+
+h1 {
+    color: #0277bd; /* A darker shade of blue for contrast */
+    font-size: 2.5em; /* Larger font size for the title */
+    text-align: center; /* Center the title */
+    margin-bottom: 2%; /* Spacing below the title */
+}
+p {
+    text-align: center;
+    color: #0277bd
+}
+form {
+    display: flex;
+    flex-direction: column; /* Stack form elements vertically */
+}
+
+label {
+    margin-bottom:0px;
+    text-align: left;
+    font-size: 1.1em; /* Slightly larger label text */
+    color: #333; /* Dark grey color for text */
+}
+
+input[type="text"],
+input[type="email"] {
+    padding: 8px;
+    margin-bottom: 10px; /* Space between the form fields */
+    border: 1px solid #ccc; /* A subtle border */
+    border-radius: 5px; /* Rounded corners for the input fields */
+    font-size: medium;
+}
+
+input[type="submit"] {
+    background-color: #0277bd; /* Darker blue for the button to stand out */
+    color: white;
+    padding: 10px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+input[type="submit"]:hover {
+    background-color: #01579b; /* Even darker blue on hover */
+}
+
+/* Add this to your existing CSS or include it in the same CSS file */
+
+.action-buttons {
+    text-align: center; /* Center the buttons */
+    padding: 0px;
+}
+
+.action-buttons h1 {
+    color: #0277bd; /* Dark blue color for the title */
+    font-size: 2.5em; /* Larger font size for the title */
+    margin-bottom: 30px; /* Space below the title */
+}
+
+.action-buttons a {
+    display: inline-block; /* Align links next to each other */
+    margin: 0 10px; /* Margin on the sides */
+    padding: 10px 20px; /* Padding inside the links */
+    background-color: #0277bd; /* Background color */
+    color: white; /* Text color */
+    text-decoration: none; /* Remove underline from links */
+    text-transform: uppercase; /* Uppercase text */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s, transform 0.1s; /* Smooth transition for hover and click */
+    font-weight: bold; /* Bold font */
+    cursor: pointer; /* Cursor to pointer */
+}
+
+.action-buttons a:hover {
+    background-color: #01579b; /* Darker blue for hover state */
+}
+
+.action-buttons a:active {
+    transform: translateY(2px); /* Simulate button press */
+    background-color: #014377; /* Even darker blue for active state */
+}
+
+/* Style adjustments for longer text buttons */
+.action-buttons a {
+    white-space: nowrap; /* Ensure the text doesn't wrap */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis if text is too long */
+    width: 220px; /* Set a fixed width for consistency */
+    box-sizing: border-box; /* Include padding in the width */
+}

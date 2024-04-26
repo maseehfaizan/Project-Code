@@ -1,6 +1,6 @@
 import programming
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, session,jsonify
-from flask import Markup
+#from flask import Markup
 from flask_session import Session  # Session management
 from difflib import get_close_matches
 import pandas as pd
@@ -8,6 +8,7 @@ import threading
 import time
 import plotly.graph_objects as go
 import plotly.io as pio
+from markupsafe import Markup
 
 app = Flask(__name__)
 app.config["SESSION_PERMANENT"] = False

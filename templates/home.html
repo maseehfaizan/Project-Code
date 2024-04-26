@@ -3,27 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
+    <link rel="stylesheet" href="static/style.css"> <!-- Link to your CSS file -->
+    <title>Project ATHENA</title>
 </head>
 <body>
-    <h1>Welcome to the Home Page</h1>
-    <p>Please fill out the form below:</p>
-
-    <form action="/" method="post">
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
-
-        <label for="surname">Surname:</label><br>
-        <input type="text" id="surname" name="surname" required><br><br>
-
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
-
-        <label for="company">Company Name:</label><br>
-        <input type="text" id="company" name="company" required><br><br>
-
-        <input type="submit" value="Submit">
-    </form>
-
+    <div class="content-container" style="display: flex; justify-content: center; align-items: flex-start; height: 100vh; padding: 20px;">
+        
+        <!-- Text paragraph explaining the website -->
+        <div class="explanation-text" style="flex: 1; max-width: 50%; padding-right: 20px;">
+            <h2>About Project ATHENA</h2>
+            <p>
+                Welcome to Project APOLLO, your comprehensive resource for financial information. Our platform provides real-time data on market trends, company financials, and economic indicators. We aim to empower investors and financial professionals with accurate and actionable insights. Join us to enhance your financial strategy and make informed decisions.
+            </p>
+        </div>
+        
+        <!-- Form container -->
+        <div class="container" style="flex: 1; max-width: 50%;">
+            <h1>Welcome to project APOLLO</h1>
+            <p>Please complete the form below:</p>
+            <p>It allows you to request the necessary financial information.</p>
+            <form action="/" method="post">
+                <label for="name">Name:</label><br>
+                <input type="text" id="name" name="name" required><br><br>
+        
+                <label for="surname">Surname:</label><br>
+                <input type="text" id="surname" name="surname" required><br><br>
+        
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" required><br><br>
+        
+                <label for="company">Company Name:</label><br>
+                <input type="text" id="company" name="company" required><br><br>
+        
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+        
+    </div>
 </body>
 </html>

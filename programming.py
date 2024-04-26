@@ -102,7 +102,12 @@ def finance(head,cik,names):
     financials = financials.drop('val',axis = 1)
     financials = financials.sort_values(by='Year',ascending=True)
     financials = financials.set_index('Year')
-    financials = financials.T
+    try:
+        financials['Liability'] = financials['Liability and Stockholder equity'] - financials['Total Stockholders equity']
+
+    except Exception as e:
+    # Code that runs if an exception occurs
+        financials['Liability'] = financials['Liability and Stockholder equity'] * 0
     return financials
 
 def income(financials):
@@ -118,8 +123,8 @@ def balance(financials):
 
 def price(tic,financial):
 
-    first = financial.columns[0].astype(int)
-    last = financial.columns[-1].astype(int)
+    first = financial.transpose().columns[0].astype(int)
+    last = financial.transpose().columns[-1].astype(int)
 
     start=datetime.datetime(first,1,1)
     end=datetime.datetime(last,12,31)
@@ -340,18 +345,18 @@ def eps_plot_interactive(dataframe,ticker):
     fig = make_subplots(rows=1, cols=2, subplot_titles=('Earnings per Share', 'Net Income'))
 
     # Generate the colors based on the sign of the 'EPS' and 'Net Income' values
-    colors_eps = ['red' if x < 0 else 'green' for x in income['EPS']]
-    colors_net_income = ['red' if x < 0 else 'green' for x in income['Net Income']]
+    colors_eps = ['red' if x < 0 else 'green' for x in dataframe['EPS']]
+    colors_net_income = ['red' if x < 0 else 'green' for x in dataframe['Net Income']]
 
     # Add bar plots for 'EPS'
     fig.add_trace(
-        go.Bar(x=dataframe['Year'], y=dataframe['EPS'], marker_color=colors_eps, name='EPS'),
+        go.Bar(x=dataframe.reset_index()['Year'], y=dataframe['EPS'], marker_color=colors_eps, name='EPS'),
         row=1, col=1
     )
 
     # Add bar plots for 'Net Income'
     fig.add_trace(
-        go.Bar(x=dataframe['Year'], y=dataframe['Net Income'], marker_color=colors_net_income, name='Net Income'),
+        go.Bar(x=dataframe.reset_index()['Year'], y=dataframe['Net Income'], marker_color=colors_net_income, name='Net Income'),
         row=1, col=2
     )
 
@@ -389,28 +394,26 @@ def ratio_plot_interactive(dataframe,ticker):
     The dataframe here is the Balancesheet dataframe
     The Ticker is about the name of the company.
     """
-
-    dataframe = dataframe.reset_index()
     # Create subplots
     fig = make_subplots(rows=1, cols=2, subplot_titles=('Liability to Equity Ratio', 'Liability to Current Asset Ratio'))
 
     # First subplot for 'Liability to Equity ratio'
     fig.add_trace(
-        go.Bar(name='Liability', x=dataframe['Year'], y=dataframe['Liability'], marker_color='blue'),
+        go.Bar(name='Liability', x=dataframe.reset_index()['Year'], y=dataframe['Liability'], marker_color='blue'),
         row=1, col=1
     )
     fig.add_trace(
-        go.Bar(name='Total Stockholders Equity', x=dataframe['Year'], y=dataframe['Total Stockholders equity'], marker_color='green'),
+        go.Bar(name='Total Stockholders Equity', x=dataframe.reset_index()['Year'], y=dataframe['Total Stockholders equity'], marker_color='green'),
         row=1, col=1
     )
 
     # Second subplot for 'Liability to Current Asset Ratio'
     fig.add_trace(
-        go.Bar(name='Liability', x=dataframe['Year'], y=dataframe['Liability'], marker_color='blue'),
+        go.Bar(name='Liability', x=dataframe.reset_index()['Year'], y=dataframe['Liability'], marker_color='blue'),
         row=1, col=2
     )
     fig.add_trace(
-        go.Bar(name='Current Assets', x=dataframe['Year'], y=dataframe['Current Assets'], marker_color='green'),
+        go.Bar(name='Current Assets', x=dataframe.reset_index()['Year'], y=dataframe['Current Assets'], marker_color='green'),
         row=1, col=2
     )
 
