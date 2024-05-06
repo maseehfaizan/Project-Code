@@ -15,10 +15,19 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 def process_financial_data(name, surname, email, ticker):
+    """
+    Parameter
+    - Name entered
+    - Surmane entered
+    - Email entered
+    - Ticker entered
+
+    Imports all the functionality of programming.py to display all the plots
+    """
     header = programming.identity(name, surname, email)
     ticker_df = programming.company_ticker(header)
     ticker = ticker.upper()
-    ticker = get_close_matches(ticker, ticker_df['ticker'], n=1, cutoff=0.65)[0]
+    ticker = get_close_matches(ticker, ticker_df['ticker'], n=1, cutoff=0.25)[0]
     cik = programming.cik_finder(ticker_df, ticker)
     facts = programming.company_facts(header, cik)
     names = programming.matchmaker(facts)

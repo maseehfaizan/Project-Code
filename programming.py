@@ -19,10 +19,31 @@ from difflib import get_close_matches
 
 
 def identity(name,surname,email):
+    """
+    Take in as parameter:
+
+    - User name
+    - User surname
+    - User email and gives their headers
+
+    Defines the headers as identification for SEC
+
+    """
     headers = {'User-Agent':f'{name} {surname} {email}'}
     return headers
 
+
+
 def company_ticker(head):
+    """
+    This will take in the header as a parameter, which is the identity
+
+    The function creates a dataframe, rename the columns appropriatly and make fill the cik number with
+    leading zeros so the ticker dataframe is well organised!
+
+    Returns:
+    a pandas dataframe containing Company Ticker and their name.
+    """
     ticker = requests.get('https://www.sec.gov/files/company_tickers.json',headers=head).json()
     ticker_df = pd.DataFrame.from_dict(ticker,orient='index')
     ticker_df.rename(columns={'cik_str':'cik','title':'name'},inplace=True)
@@ -30,13 +51,18 @@ def company_ticker(head):
     ticker_df['cik'] = ticker_df['cik'].astype(str).str.zfill(10)
     return ticker_df
 
-def company_facts(head,cik):
-    facts = requests.get(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json',headers = head).json()
-    return facts
 
 
 
 def cik_finder(ticker_df,tic):
+    """
+    Parameters
+    - Pandas Dataframe containing Ticker information
+    - The Ticker value the user has submitted
+
+    Returns:
+    - Company Cik number with leading Zeros
+    """
     # Upper things up so even if user submits something wrong the code will make the ticker uppercase
     tic = tic.upper()
     #Now I will find the closest match so if the user put in something that is slightly wrong it won't crash the whole system up and still run the code fine.
@@ -44,11 +70,39 @@ def cik_finder(ticker_df,tic):
     cik = ticker_df.loc[ticker_df['ticker'] == tic.upper(), 'cik'].iloc[0]
     return cik
 
+
+
+def company_facts(head,cik):
+    """
+    Parameters:
+    - head, which is the identity
+    - cik, which is the cik number with leading zeros.
+
+    Returns:
+    Important information on the comapany like where the files like 10-K are.
+    """
+
+    facts = requests.get(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json',headers = head).json()
+    return facts
+
 def find_best_match(items, search):
     matches = difflib.get_close_matches(search, items, n=1, cutoff=0.4)
     return matches[0] if matches else None
 
 def matchmaker(facts):
+    """
+    Parameters
+    - Pandas Dataframe containing all the information and facts 
+    
+    - The function will find the appropriate data in the US-GAAP
+    - Names of the accounts needed are also created to have standard naming scheme
+    - Normalize all the accounts.
+    - Find the best match between accounts and names
+
+    Returns:
+    The best match
+    """
+
     accounts = list(facts['facts']['us-gaap'].keys())
     names = {'Assets':['Assets'],
             'Current Assets':['assets current'],
@@ -74,6 +128,16 @@ def matchmaker(facts):
 
 
 def finance(head,cik,names):
+
+    """
+    Parameters:
+    - Head as identifier
+    - cik number with leading zeros
+    - names as the perfect match
+
+    The funtion creates a data frame with all the financial information
+    After come computations the financial information is returned as a Pandas DataFrame
+    """
 
     financials = pd.DataFrame(columns=['Year','val'])
     ix = 0
@@ -111,18 +175,37 @@ def finance(head,cik,names):
     return financials
 
 def income(financials):
+    """
+    Takes the financial dataframe and copy's only the income statement information
+    """
     income = financials.iloc[6:].transpose()
     income.reset_index(inplace=True)
     return income
 
 def balance(financials):
+    """
+    Takes the financial dataframe and copy's only the Balancesheet information
+    """
     balance = financials.iloc[:6].transpose()
     balance.reset_index(inplace=True)
     return balance
 
 
 def price(tic,financial):
+    """
+    Parameters:
+    - Ticker value
+    - Financial dataframe
 
+    The function downloads company price and market prices for the same timeframe
+    as in Financial dataframe from Yahoo Finance. 
+    It drops the data that is not used
+    The riskfree rates are imported and initializes
+    The funtion also computes the returns and cumulative returns for all the accounts
+    The function merges all the data frame 
+    Returns
+    - main as the merged DataFrame.
+    """
     first = financial.transpose().columns[0].astype(int)
     last = financial.transpose().columns[-1].astype(int)
 
@@ -167,6 +250,15 @@ def price(tic,financial):
 
 
 def get_company_beta(ticker):
+    """
+    Parameter:
+    - Ticker
+    Get the company data there are times where yahoo doesn't have the beta data for newly listed companies including TSLA.
+    For those company I will give beta balue of 1 so it doesn't change anything in further analysis
+    
+    Returns
+    - Beta Value
+    """
     # Get the company data there are times where yahoo doesn't have the beta data for newly listed companies including TSLA.
     #For those company I will give beta balue of 1 so it doesn't change anything in further analysis
     company = yf.Ticker(ticker)
@@ -199,6 +291,11 @@ def return_plot(dataframe, ticker):
 
 
 def riskfree():
+    """
+    Imports Riskfree rate
+    Drops all the un necessary columns
+    Returns the riskfree rate
+    """
     # Emptry dataframe
     rate = pd.DataFrame()
     #empty rates
